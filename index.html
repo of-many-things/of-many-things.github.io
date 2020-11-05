@@ -5,8 +5,9 @@
         <title>Нуменера</title>
     </head>
     <body>
-        <button type = "button" onclick="construct_oddity()">Конструктор диковин</button>
-        <p id="oddity"></p>
+        <button type = "button" onclick="make_oddity()">Диковина</button>
+        <button type = "button" onclick="document.getElementById('text').innerHTML = make_ruin()">Кусок руин</button>
+        <p id="text"></p>
     </body>
     <script>
         const quality_chance = "0.2";
@@ -43,9 +44,27 @@
             return Math.random() < chance;
         }
 
+        function random_range(min, max) {
+            return Math.floor(Math.random() * (max - min)) + min;
+        }
+
         function random_element(items) {
             return items[Math.floor(Math.random() * items.length)];
         }
+
+        function random_weighted(items) {
+            let total_weight = 0;
+            for (let item of items) {
+                total_weight += item.weight;
+            }
+            let weight = random_range(0, total_weight);
+            for (let item of items) {
+                weight -= item.weight;
+                if (weight < 0) {
+                    return item.item;
+                }
+            }
+        } 
 
         function capitalize(string) {
             return string[0].toUpperCase() + string.slice(1);
@@ -650,7 +669,7 @@
             return result;
         }
 
-        function construct_oddity() {
+        function make_oddity() {
             let oddity = {};
             const object = random_element(objects);
             oddity.object = object[0];
@@ -711,7 +730,70 @@
                 oddity.that
             ]);
             oddity_string += ".";
-            document.getElementById("oddity").innerHTML = capitalize(oddity_string.trim());
+            document.getElementById("text").innerHTML = capitalize(oddity_string.trim());
+        }
+
+        const corridor_features = [
+            {"item": "длиной 6 метров", "weight": 7}, // roll again
+            {"item": "длиной несколько метров", "weight": 3},
+            {"item": ", перегороженный обвалом", "weight": 1},
+            {"item": ", заканчивающийся тупиком", "weight": 1},
+            {"item": ", изгибающийся влево", "weight": 1},
+            {"item": ", изгибающийся вправо", "weight": 1},
+            {"item": ", поднимающийся наверх", "weight": 1},
+            {"item": ", спускающийся вниз", "weight": 1},
+            {"item": ", ведущий параллельно предыдущему куску", "weight": 1}, // roll again
+            {"item": ", ведущий через полость", "weight": 1}, // roll again
+            {"item": ", заканчивающийся T-образным перекрестком", "weight": 1},
+            {"item": ", заканчивающийся X-образным перекрестком", "weight": 1},
+        ];
+
+        function make_corridor() {
+            let feature = random_weighted(corridor_features);
+            if (!feature.startsWith(",")) {
+                feature = " " + feature;
+            }
+            return "Коридор" + feature + ".";
+        }
+
+        const room_shapes = [
+            {"item": "маленький", "weight": 2},
+            {"item": "5-метровый", "weight": 4},
+            {"item": "9-метровый", "weight": 9},
+            {"item": "15-метровый", "weight": 3},
+            {"item": "18-метровый", "weight": 1},
+            {"item": "27-метровый", "weight": 1},
+        ];
+
+        const room_sizes = [
+            {"item": "круглый", "weight": 2},
+            {"item": "квадратный", "weight": 2},
+            {"item": "прямоугольный", "weight": 13},
+            {"item": "шестиугольный", "weight": 1},
+            {"item": "полукруглый", "weight": 1},
+            {"item": "треугольный", "weight": 1},
+        ];
+
+        function room_shape() {
+            return random_weighted(room_shapes);
+        }
+
+        function room_size() {
+            return random_weighted(room_sizes);
+        }
+
+        function make_chamber() {
+            return capitalize(conjugate_adjective(room_size(), "f")) + 
+                " " + conjugate_adjective(room_shape(), "f") + 
+                " " + "комната.";
+        }
+
+        function make_ruin() {
+            let make = random_weighted([
+                {"item": make_corridor, "weight": 20},
+                {"item": make_chamber, "weight": 28},
+            ])
+            return make();
         }
     </script>
 </html> 
