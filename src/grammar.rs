@@ -51,21 +51,21 @@ pub enum NounDeclension {
     /// Несклоняемые слова
     T0,
     /// Слова с основой на твёрдый согласный (топор, комод, балда, кобра, олово, пекло; твёрдый, тусклый).
-    T1, 
+    T1,
     /// Слова с основой на мягкий согласный (тюлень, искатель, цапля, Дуня, горе, поле; весенний).
-    T2, 
+    T2,
     /// Слова с основой на г, к или х (сапог, коряга, парк, моллюск, золотко, петух, неряха; мягкий).
-    T3, 
+    T3,
     /// Слова с основой на ж, ш, ч, щ (калач, лаваш, галоша, святоша, жилище, вече; вящий).
-    T4, 
+    T4,
     /// Слова с основой на ц (немец, конец, девица, деревце; куцый).
-    T5, 
+    T5,
     /// Слова с основой на гласный (кроме и) или й/j (бой, край; шея, здоровье).
     T6(char),
     /// Слова с основой на и (полоний, сложение, мания, удостоверение).
-    T7, 
+    T7,
     /// Слова с традиционным «3-м склонением» (боль, тетрадь, зыбь; имя; путь).
-    T8, 
+    T8,
 }
 
 #[derive(Copy, Clone)]
@@ -85,9 +85,9 @@ fn adjective_declension(adjective: &Adjective) -> AdjDeclension {
     }
     let is_mixed = MIXED_STEM_ENDS.contains(&chars.next().unwrap());
     if ending_start == 'о' {
-        if is_mixed { 
+        if is_mixed {
             AdjDeclension::Mixed(MixedAdjDeclension::O)
-        } else { 
+        } else {
             AdjDeclension::Hard(HardAdjDeclension::O)
         }
     } else if is_mixed {
@@ -97,7 +97,13 @@ fn adjective_declension(adjective: &Adjective) -> AdjDeclension {
     }
 }
 
-pub fn adjective_ending(declension: AdjDeclension, gender: Gender, animacy: Animacy, case: Case, number: Number) -> &'static str {
+pub fn adjective_ending(
+    declension: AdjDeclension,
+    gender: Gender,
+    animacy: Animacy,
+    case: Case,
+    number: Number,
+) -> &'static str {
     use AdjDeclension::*;
     use Animacy::*;
     use Case::*;
@@ -113,10 +119,10 @@ pub fn adjective_ending(declension: AdjDeclension, gender: Gender, animacy: Anim
                 Accusative => match animacy {
                     Animate => "ых",
                     Inanimate => "ые",
-                }
+                },
                 Instrumental => "ыми",
                 Locative => "ых",
-            } 
+            },
             Mixed(_) | Soft => match case {
                 Nominative => "ие",
                 Genitive => "их",
@@ -124,11 +130,11 @@ pub fn adjective_ending(declension: AdjDeclension, gender: Gender, animacy: Anim
                 Accusative => match animacy {
                     Animate => "их",
                     Inanimate => "ие",
-                }
+                },
                 Instrumental => "ими",
                 Locative => "их",
-            }
-        }
+            },
+        },
         Singular => {
             let (nominative, instrumental) = match declension {
                 Hard(HardAdjDeclension::Y) => ("ый", "ым"),
@@ -145,10 +151,10 @@ pub fn adjective_ending(declension: AdjDeclension, gender: Gender, animacy: Anim
                         Accusative => match animacy {
                             Animate => "ого",
                             Inanimate => nominative,
-                        }
+                        },
                         Instrumental => instrumental,
                         Locative => "ом",
-                    }
+                    },
                     Soft => match case {
                         Nominative => nominative,
                         Genitive => "его",
@@ -156,23 +162,23 @@ pub fn adjective_ending(declension: AdjDeclension, gender: Gender, animacy: Anim
                         Accusative => match animacy {
                             Animate => "его",
                             Inanimate => nominative,
-                        }
+                        },
                         Instrumental => instrumental,
                         Locative => "им",
-                    }
-                }
+                    },
+                },
                 Feminine => match declension {
                     Hard(_) | Mixed(_) => match case {
                         Nominative => "ая",
                         Accusative => "ую",
                         _ => "ой",
-                    }
+                    },
                     Soft => match case {
                         Nominative => "яя",
                         Accusative => "юю",
                         _ => "ей",
-                    }
-                }
+                    },
+                },
                 Neuter => match declension {
                     Hard(_) | Mixed(_) => match case {
                         Nominative => "ое",
@@ -181,7 +187,7 @@ pub fn adjective_ending(declension: AdjDeclension, gender: Gender, animacy: Anim
                         Accusative => "ое",
                         Instrumental => instrumental,
                         Locative => "ом",
-                    }
+                    },
                     Soft => match case {
                         Nominative => "ее",
                         Genitive => "его",
@@ -189,17 +195,29 @@ pub fn adjective_ending(declension: AdjDeclension, gender: Gender, animacy: Anim
                         Accusative => "ее",
                         Instrumental => instrumental,
                         Locative => "ем",
-                    }
-                }
+                    },
+                },
             }
         }
     }
 }
 
-pub fn decline_adjective(adjective: &Adjective, gender: Gender, animacy: Animacy, case: Case, number: Number) -> String {
+pub fn decline_adjective(
+    adjective: &Adjective,
+    gender: Gender,
+    animacy: Animacy,
+    case: Case,
+    number: Number,
+) -> String {
     let len = adjective.0.chars().count();
     let mut string: String = adjective.0.chars().take(len - 2).collect();
-    string.push_str(adjective_ending(adjective_declension(adjective), gender, animacy, case, number));
+    string.push_str(adjective_ending(
+        adjective_declension(adjective),
+        gender,
+        animacy,
+        case,
+        number,
+    ));
     string
 }
 
@@ -211,7 +229,7 @@ fn nom_singular(noun: &Noun) -> &'static str {
         (Masculine, T1) | (Masculine, T3) | (Masculine, T4) | (Masculine, T5) => "",
         (Masculine, _) => "ь",
         (Feminine, T1) | (Feminine, T2) | (Feminine, T3) | (Feminine, T4) => "а",
-        (Feminine, _)  => "я",
+        (Feminine, _) => "я",
         (Neuter, T1) => "о",
         (Neuter, _) => "е",
     }
@@ -225,7 +243,7 @@ fn nom_plural(noun: &Noun) -> &'static str {
     match (noun.gender, noun.declension, noun.declension_exception) {
         (_, _, Plural(plural)) => plural,
         (Feminine, T1, _) | (Feminine, T4, _) | (Masculine, T1, _) | (Masculine, T4, _) => "ы",
-        (Masculine, _, _) | (Feminine, _, _)  => "и",
+        (Masculine, _, _) | (Feminine, _, _) => "и",
         (Neuter, T1, _) | (Neuter, T4, _) => "а",
         (Neuter, _, _) => "я",
     }
@@ -257,17 +275,17 @@ fn gen_plural(noun: &Noun) -> &'static str {
 fn noun_stem(noun: &Noun) -> &'static str {
     let last = noun.base.chars().last().unwrap();
     match last {
-        'ь' | 'а' | 'я' | 'о' | 'е' => &noun.base[.. noun.base.len() - last.len_utf8()],
+        'ь' | 'а' | 'я' | 'о' | 'е' => &noun.base[..noun.base.len() - last.len_utf8()],
         _ => noun.base,
     }
 }
 
 pub fn decline_noun(noun: &Noun, case: Case, number: Number) -> String {
+    use Animacy::*;
+    use Case::*;
     use Gender::*;
     use NounDeclension::*;
-    use Case::*;
     use Number::*;
-    use Animacy::*;
     let ending = match noun.declension {
         T0 => return noun.base.to_string(),
         T1 | T3 => match (case, number) {
@@ -278,25 +296,25 @@ pub fn decline_noun(noun: &Noun, case: Case, number: Number) -> String {
             (Dative, Singular) => match noun.gender {
                 Feminine => "е",
                 _ => "у",
-            }
+            },
             (Dative, Plural) => "ам",
             (Accusative, Singular) => match (noun.gender, noun.animacy) {
                 (Feminine, _) => "у",
                 (_, Animate) => gen_singular(noun),
                 (_, Inanimate) => nom_singular(noun),
-            }
+            },
             (Accusative, Plural) => match noun.animacy {
                 Animate => gen_plural(noun),
                 Inanimate => nom_plural(noun),
-            }
+            },
             (Instrumental, Singular) => match noun.gender {
                 Feminine => "ой",
                 _ => "ом",
-            }
+            },
             (Instrumental, Plural) => "ами",
             (Locative, Singular) => "е",
             (Locative, Plural) => "ах",
-        }
+        },
         T2 => match (case, number) {
             (Nominative, Singular) => nom_singular(noun),
             (Nominative, Plural) => nom_plural(noun),
@@ -305,31 +323,31 @@ pub fn decline_noun(noun: &Noun, case: Case, number: Number) -> String {
             (Dative, Singular) => match noun.gender {
                 Feminine => "е",
                 _ => "ю",
-            }
+            },
             (Dative, Plural) => "ям",
             (Accusative, Singular) => match (noun.gender, noun.animacy) {
                 (Feminine, _) => "ю",
                 (_, Animate) => gen_singular(noun),
                 (_, Inanimate) => nom_singular(noun),
-            }
+            },
             (Accusative, Plural) => match noun.animacy {
                 Animate => gen_plural(noun),
                 Inanimate => nom_plural(noun),
-            }
+            },
             (Instrumental, Singular) => match noun.gender {
                 Feminine => "ей",
                 _ => "ем",
-            }
+            },
             (Instrumental, Plural) => "ями",
             (Locative, Singular) => "е",
             (Locative, Plural) => "ях",
-        }
+        },
         _ => todo!(),
     };
     let mut word = noun_stem(noun).to_string();
     if let NounDeclensionException::FluentVowel(vowel) = noun.declension_exception {
         let second_last = word.chars().rev().nth(1);
-        let null_ending = ending == "" || ending == "ь"; 
+        let null_ending = ending == "" || ending == "ь";
         if null_ending && second_last != Some(vowel) {
             let last = word.pop().unwrap();
             word.push(vowel);
@@ -341,7 +359,7 @@ pub fn decline_noun(noun: &Noun, case: Case, number: Number) -> String {
         }
     }
     word.push_str(ending);
-    word 
+    word
 }
 
 #[derive(Copy, Clone)]
@@ -355,13 +373,19 @@ pub struct Noun {
 
 impl Noun {
     pub const fn new(
-        base: &'static str, 
-        gender: Gender, 
+        base: &'static str,
+        gender: Gender,
         animacy: Animacy,
-        declension: NounDeclension, 
-        declension_exception: NounDeclensionException, 
+        declension: NounDeclension,
+        declension_exception: NounDeclensionException,
     ) -> Self {
-        Self { base, declension, declension_exception, gender, animacy }
+        Self {
+            base,
+            declension,
+            declension_exception,
+            gender,
+            animacy,
+        }
     }
 }
 
