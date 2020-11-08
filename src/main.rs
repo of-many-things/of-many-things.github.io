@@ -30,7 +30,7 @@ fn build_string(group: &NounGroup) -> String {
     for modifier in group.modifiers.iter() {
         parts.push(grammar::decline_adjective(modifier, gender, animacy, group.case, group.number));
     }
-    parts.push(group.noun.text.to_string());
+    parts.push(grammar::decline_noun(&group.noun, group.case, group.number));
     build_string_from_parts(parts.iter().map(String::deref))
 }
 
@@ -97,9 +97,22 @@ impl Component for Model {
                 if rng.gen_bool(PROBABILITY_MATERIAL) {
                     oddity.modifiers.push(*lexicon::MATERIAL.choose(&mut rng).unwrap());
                 }
-                self.value = build_string(&oddity);
-                self.value = capitalize(&self.value);
-                self.value.push('.');
+                self.value.clear();
+                let cases = [Case::Nominative, Case::Genitive, Case::Dative, Case::Accusative, Case::Instrumental, Case::Locative];
+                let numbers = [Number::Singular, Number::Plural];
+                for &number in numbers.iter() {
+                    for &case in cases.iter() {
+                        oddity.case = case;
+                        oddity.number = number;
+                        if self.value.len() > 0 {
+                            self.value.push_str("; ");
+                        }
+                        self.value.push_str(&format!("{:?}, {:?}: ", number, case));
+                        self.value.push_str(&build_string(&oddity));
+                    }
+                }
+                //self.value = capitalize(&self.value);
+                //self.value.push('.');
                 true
             }
         }
